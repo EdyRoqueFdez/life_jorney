@@ -1,0 +1,14 @@
+# Core framework
+django==5.2.14
+djangorestframework==3.17.1
+
+# Database
+psycopg[binary]==3.3.4
+
+# Configuration
+python-decouple==3.8
+
+# Django internals (pinned for reproducibility)
+asgiref==3.11.1
+sqlparse==0.5.3
+typing-extensions==4.15.0

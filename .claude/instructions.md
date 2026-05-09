@@ -230,7 +230,44 @@ interacting with JSON decoding, and narrow the type immediately after.
 
 ---
 
-## 6. Commit messages — Recommended
+## 6. Dependency management — Mandatory
+
+### 6.1 Always update requirements.txt
+
+Every time a package is installed or removed, `requirements.txt` must be updated
+in the same commit. No exceptions — a package that is in the venv but not in
+`requirements.txt` does not exist for other contributors.
+
+**Workflow for adding a dependency:**
+
+```bash
+# 1. Install with uv
+uv add <package>
+
+# 2. Immediately update requirements.txt
+uv pip freeze > requirements.txt   # then review the diff
+
+# 3. Commit both changes together
+git add requirements.txt pyproject.toml uv.lock
+git commit -m "chore(deps): add <package>"
+```
+
+**For AI agents:** after any `uv add` or `uv remove` call, always update
+`requirements.txt` before the task is considered done. Do not wait for the user
+to ask.
+
+### 6.2 requirements.txt conventions
+
+- Group packages by role with a `# comment` header (Core framework, Database,
+  Configuration, Dev/test, etc.).
+- Pin exact versions (`package==x.y.z`) for all direct and indirect dependencies
+  so installs are fully reproducible.
+- Keep indirect Django dependencies (asgiref, sqlparse) at the bottom under
+  `# Django internals`.
+
+---
+
+## 7. Commit messages — Recommended
 
 Follow **Conventional Commits** (`https://www.conventionalcommits.org`).
 
@@ -267,7 +304,7 @@ WIP
 
 ---
 
-## 7. Security and privacy rules — Mandatory
+## 8. Security and privacy rules — Mandatory
 
 These rules exist because life_jorney handles Protected Health Information (PHI).
 Violating them is not a style issue — it is a data safety issue.
@@ -287,7 +324,7 @@ Violating them is not a style issue — it is a data safety issue.
 
 ---
 
-## 8. Testing expectations — Recommended
+## 9. Testing expectations — Recommended
 
 - Unit tests cover the function contract described in the docstring.
 - Integration tests cover the complete request/response cycle for API endpoints,
@@ -299,7 +336,7 @@ Violating them is not a style issue — it is a data safety issue.
 
 ---
 
-## 9. How AI agents should apply these rules
+## 10. How AI agents should apply these rules
 
 When generating code for this repository:
 
