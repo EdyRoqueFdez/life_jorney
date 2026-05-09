@@ -2,7 +2,7 @@
 
 Covers the core entities required by US-01 through US-03:
 User (with roles), Specialty, DoctorProfile, PatientProfile,
-MedicalEvent, and RegistrationRequest.
+SupervisorProfile, MedicalEvent, RegistrationRequest, and Notification.
 """
 
 from __future__ import annotations
@@ -133,6 +133,26 @@ class PatientProfile(models.Model):
         return f"Patient: {self.user.get_full_name() or self.user.email}"
 
 
+class SupervisorProfile(models.Model):
+    """Extended profile for users with the Supervisor role.
+
+    Supervisors validate medical events recorded by doctors (US-03 / FR-32–FR-36).
+    """
+
+    class Shift(models.TextChoices):
+        MORNING = "morning", "Morning"
+        AFTERNOON = "afternoon", "Afternoon"
+        NIGHT = "night", "Night"
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="supervisor_profile")
+    supervised_area = models.CharField(max_length=100, blank=True)
+    shift = models.CharField(max_length=20, choices=Shift.choices, blank=True)
+
+    def __str__(self) -> str:
+        """Return supervisor name and area."""
+        return f"Supervisor: {self.user.get_full_name() or self.user.email} ({self.supervised_area})"
+
+
 class MedicalEvent(models.Model):
     """A clinical event recorded in a patient's history.
 
@@ -148,6 +168,11 @@ class MedicalEvent(models.Model):
         PROCEDURE = "procedure", "Procedure"
         FOLLOW_UP = "follow_up", "Follow-up"
 
+    class ValidationStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        VALIDATED = "validated", "Validated"
+        REJECTED = "rejected", "Rejected"
+
     patient = models.ForeignKey(PatientProfile, on_delete=models.PROTECT, related_name="medical_events")
     event_type = models.CharField(max_length=30, choices=EventType.choices)
     description = models.TextField()
@@ -161,6 +186,12 @@ class MedicalEvent(models.Model):
     )
     # FR-13: always False on creation; set True only by supervisor action (US-03)
     is_validated = models.BooleanField(default=False)
+    # US-03: tracks the full review lifecycle (PENDING → VALIDATED or REJECTED)
+    validation_status = models.CharField(
+        max_length=20,
+        choices=ValidationStatus.choices,
+        default=ValidationStatus.PENDING,
+    )
     supervisor = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -169,6 +200,7 @@ class MedicalEvent(models.Model):
         related_name="validated_events",
     )
     validated_at = models.DateTimeField(null=True, blank=True)
+    rejection_comment = models.TextField(blank=True)
     # FR-14: author and timestamp recorded automatically
     created_at = models.DateTimeField(auto_now_add=True)
 

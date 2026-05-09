@@ -159,3 +159,66 @@ class RespondToRequestSerializer(serializers.Serializer):
         choices=ACTION_CHOICES,
         error_messages={"invalid_choice": "action must be 'accept' or 'reject'."},
     )
+
+
+class ValidationQueueSerializer(serializers.ModelSerializer):
+    """Read-only serializer for listing pending medical events in the supervisor queue.
+
+    Returns (read):
+        id, patient, event_type, description, icd_code, event_date,
+        specialty, author, validation_status, created_at.
+    """
+
+    class Meta:
+        model = MedicalEvent
+        fields = [
+            "id",
+            "patient",
+            "event_type",
+            "description",
+            "icd_code",
+            "event_date",
+            "specialty",
+            "author",
+            "validation_status",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class ReviewEventSerializer(serializers.Serializer):
+    """Validate the review action submitted by a supervisor (FR-33, FR-34).
+
+    Args (write):
+        action: Either 'validate' or 'reject'.
+        comment: Required when action='reject'; optional otherwise.
+
+    Raises:
+        ValidationError: If action='reject' and no comment is provided.
+    """
+
+    ACTION_CHOICES = ["validate", "reject"]
+
+    action = serializers.ChoiceField(
+        choices=ACTION_CHOICES,
+        error_messages={"invalid_choice": "action must be 'validate' or 'reject'."},
+    )
+    comment = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate(self, data: dict) -> dict:
+        """Enforce that reject actions include a non-empty comment.
+
+        Args:
+            data: Deserialized field values.
+
+        Returns:
+            Validated data dict.
+
+        Raises:
+            serializers.ValidationError: If action is 'reject' and comment is blank.
+        """
+        if data.get("action") == "reject" and not data.get("comment", "").strip():
+            raise serializers.ValidationError(
+                {"comment": "A comment is required when rejecting an event."}
+            )
+        return data

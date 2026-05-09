@@ -8,6 +8,7 @@ is called.
 from __future__ import annotations
 
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -19,7 +20,21 @@ from backend.serializers import (
     MedicalEventSerializer,
     RegistrationRequestSerializer,
     RespondToRequestSerializer,
+    ReviewEventSerializer,
+    ValidationQueueSerializer,
 )
+
+
+class IsSupervisor(BasePermission):
+    """Allow access only to authenticated users with role=supervisor and an existing SupervisorProfile."""
+
+    def has_permission(self, request, view) -> bool:
+        """Return True only for authenticated supervisors with a profile."""
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.Role.SUPERVISOR
+            and hasattr(request.user, "supervisor_profile")
+        )
 
 
 class IsDoctor(BasePermission):
@@ -195,4 +210,83 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             RegistrationRequestSerializer(registration_request).data,
             status=status.HTTP_200_OK,
         )
+
+
+class ValidationQueueViewSet(viewsets.ReadOnlyModelViewSet):
+    """List pending medical events and allow supervisors to validate or reject them.
+
+    Implements US-03 / FR-32–FR-36:
+    - Only supervisors may access this viewset.
+    - List returns only events with validation_status=PENDING (FR-32).
+    - review action: validate → is_validated=True, validation_status=VALIDATED (FR-33).
+    - review action: reject → validation_status=REJECTED, comment stored (FR-34).
+    - Rejection creates a Notification for the event author (FR-35).
+    - supervisor FK and validated_at timestamp recorded on review (FR-36).
+    - Already-reviewed events cannot be reviewed again (guard).
+    """
+
+    serializer_class = ValidationQueueSerializer
+    permission_classes = [IsAuthenticated, IsSupervisor]
+
+    def get_queryset(self):
+        """Return pending events for the list, all events for detail/review actions.
+
+        The list endpoint only exposes PENDING events (FR-32). The review action
+        must be able to fetch any event so it can return 400 instead of 404 when
+        an already-reviewed event is submitted again.
+        """
+        qs = MedicalEvent.objects.select_related("patient", "author", "specialty")
+        if self.action == "list":
+            return qs.filter(validation_status=MedicalEvent.ValidationStatus.PENDING)
+        return qs
+
+    @action(detail=True, methods=["post"], url_path="review")
+    def review(self, request, pk=None) -> Response:
+        """Validate or reject a pending medical event.
+
+        Args:
+            request: DRF request with body {"action": "validate" | "reject", "comment": "..."}.
+            pk: Primary key of the MedicalEvent.
+
+        Returns:
+            200 with updated event data on success.
+            400 if the event is already reviewed or action/comment validation fails.
+        """
+        event = self.get_object()
+
+        if event.validation_status != MedicalEvent.ValidationStatus.PENDING:
+            return Response(
+                {"detail": "This event has already been reviewed."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = ReviewEventSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        action_value = serializer.validated_data["action"]
+        comment = serializer.validated_data.get("comment", "")
+        supervisor = request.user
+
+        if action_value == "validate":
+            event.is_validated = True
+            event.validation_status = MedicalEvent.ValidationStatus.VALIDATED
+            event.supervisor = supervisor
+            event.validated_at = timezone.now()
+        else:
+            event.validation_status = MedicalEvent.ValidationStatus.REJECTED
+            event.rejection_comment = comment
+            event.supervisor = supervisor
+            event.validated_at = timezone.now()
+            # FR-35: notify the event author of the rejection
+            Notification.objects.create(
+                recipient=event.author.user,
+                message=(
+                    f"Your medical event (ID {event.pk}) was rejected by "
+                    f"{supervisor.get_full_name() or supervisor.email}. "
+                    f"Reason: {comment}"
+                ),
+            )
+
+        event.save()
+        return Response(ValidationQueueSerializer(event).data, status=status.HTTP_200_OK)
 

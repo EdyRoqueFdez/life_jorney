@@ -11,7 +11,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from backend.models import DoctorProfile, PatientProfile, RegistrationRequest, Specialty
+from backend.models import DoctorProfile, MedicalEvent, PatientProfile, RegistrationRequest, Specialty, SupervisorProfile
 
 User = get_user_model()
 
@@ -186,3 +186,42 @@ def valid_request_payload(patient_user, neurology_doctor, neurology) -> dict:
         "event_type": "consultation",
         "required_specialty": neurology.pk,
     }
+
+
+# ---------------------------------------------------------------------------
+# US-03 fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def supervisor_user(db) -> User:
+    """Return a User with role=supervisor and a SupervisorProfile."""
+    user = User.objects.create_user(
+        email="supervisor@example.com",
+        password="Str0ng!Pass",
+        role=User.Role.SUPERVISOR,
+        first_name="María",
+        last_name="Rodríguez",
+    )
+    SupervisorProfile.objects.create(user=user, supervised_area="Cardiology Ward", shift="morning")
+    return user
+
+
+@pytest.fixture
+def supervisor_client(api_client, supervisor_user) -> APIClient:
+    """Return an API client authenticated as the supervisor."""
+    api_client.force_authenticate(user=supervisor_user)
+    return api_client
+
+
+@pytest.fixture
+def pending_event(db, doctor_user, patient_user, cardiology) -> MedicalEvent:
+    """Return a MedicalEvent with validation_status=PENDING authored by the cardiology doctor."""
+    return MedicalEvent.objects.create(
+        patient=patient_user.patient_profile,
+        event_type=MedicalEvent.EventType.CONSULTATION,
+        description="Routine check-up. Patient reports occasional palpitations.",
+        icd_code="I49.9",
+        event_date="2026-05-09T10:00:00Z",
+        author=doctor_user.doctor_profile,
+        specialty=cardiology,
+    )
