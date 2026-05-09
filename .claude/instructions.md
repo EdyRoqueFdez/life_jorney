@@ -230,7 +230,71 @@ interacting with JSON decoding, and narrow the type immediately after.
 
 ---
 
-## 6. Dependency management — Mandatory
+## 6. Test-Driven Development (TDD) — Mandatory
+
+All production code in this repository must be written following the **Red → Green → Refactor** cycle.
+No production code may be written without a failing test that justifies it.
+
+### 6.1 The cycle
+
+1. **Red** — write a failing test that describes exactly the behavior you want. Run it and confirm it fails.
+2. **Green** — write the minimum code needed to make the test pass. Nothing more.
+3. **Refactor** — clean up duplication or design issues without changing behavior. Run tests again.
+
+### 6.2 Test structure
+
+```
+backend/
+└── tests/
+    ├── __init__.py
+    ├── conftest.py       ← pytest fixtures (users, clients, seed data)
+    ├── test_models.py    ← unit tests for model methods and constraints
+    ├── test_serializers.py ← serializer validation logic
+    └── test_views.py     ← full API integration tests (request → response)
+```
+
+- Use **pytest** and **pytest-django**. Never Django's built-in `unittest` runner.
+- Every test function must have a **one-line docstring** stating what it asserts and why.
+
+### 6.3 Naming convention
+
+```
+test_<subject>_<condition>_<expected_result>
+
+# examples
+test_medical_event_matching_specialty_returns_201
+test_medical_event_mismatched_specialty_without_request_returns_403
+test_medical_event_is_validated_is_false_on_creation
+```
+
+### 6.4 Coverage rules
+
+- 100 % of business-logic methods (model methods, validators, service functions) — unit tests.
+- Every API endpoint — integration tests covering: happy path, permission denied, and at least one validation error.
+
+### 6.5 Do not mock the database
+
+Use a real test database. pytest-django creates and tears it down automatically.
+Mocking the database has historically caused production regressions in this domain.
+
+### 6.6 Fixture conventions
+
+Define all reusable fixtures in `backend/tests/conftest.py`.
+Never create test data inside a test function body — use fixtures so it is explicit and reusable.
+
+### 6.7 For AI agents
+
+When asked to implement any feature:
+
+1. Write all tests **first** — confirm they fail before writing any implementation code.
+2. Write the minimum implementation to make them pass.
+3. Do not mark a task as done until `uv run pytest` exits with code 0.
+4. After any `uv add` or `uv remove`, update `requirements.txt` in the same step.
+
+---
+
+## 7. Dependency management — Mandatory
+
 
 ### 6.1 Always update requirements.txt
 
@@ -267,7 +331,7 @@ to ask.
 
 ---
 
-## 7. Commit messages — Recommended
+## 8. Commit messages — Recommended
 
 Follow **Conventional Commits** (`https://www.conventionalcommits.org`).
 
@@ -304,7 +368,7 @@ WIP
 
 ---
 
-## 8. Security and privacy rules — Mandatory
+## 9. Security and privacy rules — Mandatory
 
 These rules exist because life_jorney handles Protected Health Information (PHI).
 Violating them is not a style issue — it is a data safety issue.
@@ -324,7 +388,7 @@ Violating them is not a style issue — it is a data safety issue.
 
 ---
 
-## 9. Testing expectations — Recommended
+## 10. Testing expectations — Recommended
 
 - Unit tests cover the function contract described in the docstring.
 - Integration tests cover the complete request/response cycle for API endpoints,
@@ -336,7 +400,74 @@ Violating them is not a style issue — it is a data safety issue.
 
 ---
 
-## 10. How AI agents should apply these rules
+## 10. Clinical domain rules — Mandatory
+
+These rules exist because life_jorney handles Protected Health Information (PHI) and
+clinical decisions that directly affect patient safety. They apply to every model field,
+serializer, viewset, and test that touches medical data.
+
+### 10.1 Clinical code validation
+
+Every field that stores a clinical code must have format validation — at the serializer
+layer for API input, and at the model level via a validator for programmatic creation.
+Never store a code without validating its format first.
+
+| Standard | Format rule | Example |
+|----------|-------------|---------|
+| ICD-10/11 | `^[A-Z][0-9A-Z]{1,4}(\.[0-9A-Z]{1,4})?$` | `I49.9`, `A00`, `BA80` |
+| LOINC | `^\d{1,5}-\d$` | `2160-0`, `14749-6` |
+| SNOMED CT | Numeric SCTID, 6–18 digits | `73211009` |
+| ATC | `^[A-Z][0-9]{2}[A-Z]{2}[0-9]{2}$` | `N02BE01` |
+
+When a standard is ambiguous or the code cannot be validated automatically,
+flag it with a comment and add it to the review backlog — never silently accept it.
+
+### 10.2 The `is_validated` flag is inviolable
+
+- `is_validated` (or `validate` in the data model) is **always `False` on creation**.
+- No serializer may expose `is_validated` as a writable field.
+- Only a supervisor action (US-03) may set it to `True` via its own dedicated endpoint.
+- Any code that allows a client to set `is_validated=True` on creation is a patient
+  safety defect, not just a bug.
+
+### 10.3 PHI exposure check before every new endpoint
+
+Before implementing any new API endpoint that returns patient data, verify:
+
+1. Is there an active `ConsentGrant` for the requesting user → patient pair?
+2. If not, is this a documented break-glass scenario (US-12) with a mandatory justification?
+3. Does the response include only the minimum data necessary (data minimisation)?
+
+If none of the above applies, the endpoint must not return patient data. Flag it.
+
+### 10.4 Proactive patient safety checks
+
+When implementing models or logic related to:
+- Medications → always ask whether a drug-allergy interaction check is wired up (US-13).
+- Supplies / vaccines → always verify the nurse's patient assignment scope (US-09 / FR-20).
+- Laboratory results → always verify a prior medical order exists before accepting the result (US-10 / FR-25).
+- Imaging studies → always verify a prior medical order exists (US-11 / FR-29).
+
+If the check is not yet implemented, add a `# TODO(safety): ...` comment and open it
+as a known gap — never silently omit it.
+
+### 10.5 Specialty enforcement is not optional
+
+Every endpoint that creates a clinical event must run the specialty check (FR-11 / FR-12).
+Never bypass it with a boolean flag, an admin override, or a shortcut for testing.
+Use an `APPROVED` `RegistrationRequest` as the only legitimate bypass (US-02).
+
+### 10.6 Grounding new requirements in existing US/FR
+
+When proposing or implementing a new feature:
+- Link it explicitly to an existing US (US-01…US-15) or FR (FR-01…FR-51).
+- If it does not fit any existing story, document the gap and propose a new US/FR
+  in `software_engineering.md` before implementing.
+- Never implement undocumented clinical behaviour — it cannot be clinically reviewed.
+
+---
+
+## 11. How AI agents should apply these rules
 
 When generating code for this repository:
 
