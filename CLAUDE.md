@@ -14,3 +14,14 @@ Proyecto nuevo — sin código aún. El stack tecnológico y los comandos de bui
 
 - Toda decisión técnica relevante debe quedar documentada en `INGENIERIA_SW.md`.
 - Ante cualquier duda de alcance, referirse primero a las HU y RF del documento de ingeniería.
+
+## Coding standards
+
+All code generated in this repository — by humans or AI agents — must follow the rules defined in `.claude/instructions.md`. Key mandatory rules:
+
+- Docstrings on every module, class, method, and function (Google style, English).
+- Type hints on all function signatures (Python, TypeScript, Dart).
+- No PHI in logs, no hardcoded secrets, no real patient data in fixtures.
+- English identifiers with `snake_case` / `PascalCase` / `camelCase` per language convention.
+
+See `.claude/instructions.md` for the full guide, including correct/incorrect examples.
