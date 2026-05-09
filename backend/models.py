@@ -213,3 +213,28 @@ class RegistrationRequest(models.Model):
             f"Request {self.pk}: {self.requesting_doctor} → "
             f"{self.required_specialty.name} ({self.status})"
         )
+
+
+class Notification(models.Model):
+    """In-app notification record created when a clinical action requires a user's attention.
+
+    Satisfies FR-16 at the data layer. Actual delivery (email, push) is delegated
+    to Celery tasks and will be wired up when the task queue is configured.
+    """
+
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    # TODO(delivery): wire up Celery task here to send email/push when created
+    registration_request = models.ForeignKey(
+        RegistrationRequest,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="notifications",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        """Return recipient email and read status."""
+        return f"Notification → {self.recipient.email} ({'read' if self.is_read else 'unread'})"

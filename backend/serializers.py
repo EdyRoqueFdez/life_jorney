@@ -10,7 +10,7 @@ import re
 
 from rest_framework import serializers
 
-from backend.models import MedicalEvent
+from backend.models import MedicalEvent, RegistrationRequest
 
 
 # ICD-10: letter + 2 digits + optional dot + up to 4 alphanumerics  (e.g. I49.9, A00, B20.0)
@@ -73,3 +73,89 @@ class MedicalEventSerializer(serializers.ModelSerializer):
                 "optional dot + alphanumerics (e.g. I49.9, A00, BA80)."
             )
         return normalized
+
+
+class RegistrationRequestSerializer(serializers.ModelSerializer):
+    """Serialize a RegistrationRequest for creation and listing.
+
+    On creation, requesting_doctor is injected by the viewset from the
+    authenticated user and must not be supplied in the request body.
+
+    Validates that:
+    - The executing_doctor holds the required_specialty.
+    - The requesting doctor's specialty differs from required_specialty
+      (otherwise they should create the event directly via US-01).
+
+    Args (write):
+        patient: PK of the PatientProfile.
+        executing_doctor: PK of the DoctorProfile who will execute the event.
+        event_type: One of MedicalEvent.EventType choices.
+        required_specialty: PK of the Specialty needed for the event.
+
+    Returns (read):
+        All write fields plus id, requesting_doctor (read-only), status (read-only),
+        and created_at (read-only).
+    """
+
+    class Meta:
+        model = RegistrationRequest
+        fields = [
+            "id",
+            "requesting_doctor",
+            "executing_doctor",
+            "patient",
+            "event_type",
+            "required_specialty",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = ["requesting_doctor", "status", "created_at"]
+
+    def validate(self, data: dict) -> dict:
+        """Cross-field validation for specialty consistency.
+
+        Args:
+            data: Deserialized field values.
+
+        Returns:
+            Validated data dict.
+
+        Raises:
+            serializers.ValidationError: If the executing doctor's specialty
+                does not match the required specialty, or if the requesting
+                doctor already holds the required specialty.
+        """
+        executing_doctor = data.get("executing_doctor")
+        required_specialty = data.get("required_specialty")
+
+        if executing_doctor and required_specialty:
+            if executing_doctor.specialty_id != required_specialty.pk:
+                raise serializers.ValidationError(
+                    "The executing doctor's specialty does not match the required specialty."
+                )
+
+        # Requesting doctor is injected in perform_create; validate here only if present
+        requesting_doctor = self.context.get("requesting_doctor")
+        if requesting_doctor and required_specialty:
+            if requesting_doctor.specialty_id == required_specialty.pk:
+                raise serializers.ValidationError(
+                    "Your specialty already matches the required specialty. "
+                    "Create the medical event directly instead of a cross-specialty request."
+                )
+
+        return data
+
+
+class RespondToRequestSerializer(serializers.Serializer):
+    """Validate the action field for the respond endpoint (FR-17).
+
+    Args (write):
+        action: Either 'accept' or 'reject'.
+    """
+
+    ACTION_CHOICES = ["accept", "reject"]
+
+    action = serializers.ChoiceField(
+        choices=ACTION_CHOICES,
+        error_messages={"invalid_choice": "action must be 'accept' or 'reject'."},
+    )

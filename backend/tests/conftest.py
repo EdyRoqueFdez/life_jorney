@@ -158,3 +158,31 @@ def pending_cross_specialty_request(db, doctor_user, patient_user, neurology) ->
         required_specialty=neurology,
         status=RegistrationRequest.Status.PENDING,
     )
+
+
+# ---------------------------------------------------------------------------
+# US-02 fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def pending_request(db, doctor_user, neurology_doctor, patient_user, neurology) -> RegistrationRequest:
+    """Return a PENDING RegistrationRequest addressed to the neurology doctor — US-02 base case."""
+    return RegistrationRequest.objects.create(
+        requesting_doctor=doctor_user.doctor_profile,
+        executing_doctor=neurology_doctor.doctor_profile,
+        patient=patient_user.patient_profile,
+        event_type="consultation",
+        required_specialty=neurology,
+        status=RegistrationRequest.Status.PENDING,
+    )
+
+
+@pytest.fixture
+def valid_request_payload(patient_user, neurology_doctor, neurology) -> dict:
+    """Return a valid payload for POST /api/registration-requests/."""
+    return {
+        "patient": patient_user.patient_profile.pk,
+        "executing_doctor": neurology_doctor.doctor_profile.pk,
+        "event_type": "consultation",
+        "required_specialty": neurology.pk,
+    }

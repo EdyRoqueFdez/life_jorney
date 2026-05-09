@@ -8,7 +8,7 @@ Update this file in the same commit as the US implementation.
 | US | Title | Status | Commit | Tests |
 |----|-------|--------|--------|-------|
 | US-01 | Medical event registration by specialty | ✅ Done | `9e5ffb8` | 16/16 |
-| US-02 | Cross-specialty registration request | ⬜ Pending | — | — |
+| US-02 | Cross-specialty registration request | ✅ Done | `pending` | 17/17 |
 | US-03 | Event validation by supervisor | ⬜ Pending | — | — |
 | US-04 | Patient consultation of medical history | ⬜ Pending | — | — |
 | US-05 | Family medical history visualization | ⬜ Pending | — | — |
