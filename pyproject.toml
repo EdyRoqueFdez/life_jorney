@@ -1,0 +1,11 @@
+[project]
+name = "life-jorney"
+version = "0.1.0"
+description = "Unified personal health record platform — open source, privacy-first"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0,<6.0",
+    "djangorestframework>=3.17.1",
+    "psycopg[binary]>=3.3.4",
+    "python-decouple>=3.8",
+]
