@@ -331,7 +331,7 @@ to ask.
 
 ---
 
-## 8. Commit messages — Recommended
+## 8. Commit messages — Mandatory
 
 Follow **Conventional Commits** (`https://www.conventionalcommits.org`).
 
@@ -356,14 +356,34 @@ Follow **Conventional Commits** (`https://www.conventionalcommits.org`).
 Scopes for this project: `api`, `frontend`, `mobile`, `auth`, `audit`, `consent`,
 `fhir`, `storage`, `infra`, `docs`.
 
+### One commit per User Story
+
+Each User Story (US-01…US-15) must be delivered in **a single, self-contained commit**
+that includes models, migrations, serializers, viewsets, URLs, and all tests together.
+Never split a US across multiple commits, and never mix two US in the same commit.
+
+Commit message format for a User Story:
+
+```
+feat(api): implement US-<nn> <short description>
+
+- <bullet: what model/endpoint/rule was added>
+- <bullet: key business rule enforced>
+- Tests: <N> passing
+
+US: US-<nn>
+FR: FR-<xx>, FR-<yy>
+```
+
 ```
 # correct
-feat(consent): add time-limited consent grants for research use
+feat(api): implement US-01 medical event registration with TDD
 
 # incorrect
 Fixed stuff
 update
 WIP
+add models
 ```
 
 ---
