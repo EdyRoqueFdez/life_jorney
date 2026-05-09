@@ -1,0 +1,169 @@
+name: Clinical Review
+description: >
+  Healthcare professionals: flag a clinical concern, validate a workflow,
+  or propose improvements to coding standards and patient safety mechanisms.
+  No coding knowledge required.
+title: "[Clinical]: "
+labels: ["clinical-review", "medical-expertise-needed"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for bringing your clinical expertise to life_jorney.
+
+        This template is designed for healthcare professionals, patients, caregivers, and anyone with
+        domain knowledge about how medical care actually works in practice. You do not need to know
+        how to code to submit a clinical review.
+
+        Your perspective is essential. The engineering team builds what is technically correct;
+        clinical reviewers ensure it is medically sound.
+
+        **All examples must use fictional data.** Do not include real patient information, real
+        identifiers, or screenshots from live clinical systems.
+
+  - type: dropdown
+    id: review_type
+    attributes:
+      label: Type of clinical review
+      description: What aspect of the system are you reviewing?
+      options:
+        - Clinical workflow — the process does not reflect how care actually works
+        - Patient safety — the current design could lead to clinical errors
+        - ICD-10/11 coding — diagnosis coding concerns
+        - LOINC coding — laboratory result coding concerns
+        - SNOMED CT — clinical terminology concerns
+        - ATC coding — medication classification concerns
+        - Consent flow — how patient consent is managed
+        - Emergency access — break-glass access design
+        - Family history — hereditary risk representation
+        - Allergy and medication management
+        - Role definitions — what each healthcare role should and should not do
+        - Regulatory or ethical concern
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: specialty
+    attributes:
+      label: Clinical specialty or role
+      description: What is your background? This helps route the review to the right people.
+      options:
+        - General practice / Family medicine
+        - Internal medicine
+        - Emergency medicine
+        - Surgery
+        - Pediatrics
+        - Obstetrics and gynecology
+        - Oncology
+        - Cardiology
+        - Neurology
+        - Psychiatry and mental health
+        - Radiology / Imaging
+        - Pathology and laboratory medicine
+        - Nursing
+        - Pharmacy
+        - Healthcare administration
+        - Patient / Caregiver
+        - Health informatics
+        - Bioethics
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: current_design
+    attributes:
+      label: Current design or behavior being reviewed
+      description: >
+        Describe how the system currently works (or how it is planned to work based on the
+        engineering document). Reference the relevant User Story (US-XX) or section of
+        the engineering document if you know it.
+      placeholder: |
+        According to US-09, a nurse registers a supply administration with: type, batch number,
+        date, time, and dose. The event is saved with validate=False until a supervisor approves it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: concern
+    attributes:
+      label: Clinical concern
+      description: >
+        Explain the clinical problem with the current design. Be specific.
+        What could go wrong in real clinical practice? What is missing?
+        Use fictional scenarios to illustrate.
+      placeholder: |
+        In practice, nurses also need to document the route of administration (IV, oral, IM, etc.)
+        and the administration site for IV medications. Without the route, the record is incomplete
+        and could lead to dangerous assumptions if a second dose is given by a different route.
+
+        Example: a fictional patient receives 500mg amoxicillin orally. If the route is not
+        recorded and a subsequent prescriber sees only "amoxicillin 500mg administered",
+        they may not know the bioavailability context if considering IV escalation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested improvement
+      description: >
+        What should be changed or added? Be as specific as you can.
+        You do not need to describe the technical implementation —
+        describe what the system should do from a clinical perspective.
+      placeholder: |
+        Add a mandatory "route of administration" field to the supply record, using
+        standard route codes from SNOMED CT (e.g., 26643006 = oral route,
+        47625008 = intravenous route). The field should be a controlled vocabulary
+        dropdown, not free text, to ensure consistency.
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Clinical references or guidelines
+      description: >
+        Are there clinical guidelines, standards, or literature that support your suggestion?
+        List them here. Links, DOIs, or standard names are all acceptable.
+      placeholder: |
+        - WHO Medication Safety Technical Report Series, 2021
+        - Joint Commission NPSG.03.04.01 — Labeling medications
+        - HL7 FHIR MedicationAdministration resource documentation
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Patient safety urgency
+      description: >
+        If this is a patient safety concern, how urgent is it?
+      options:
+        - Not a patient safety issue — this is a quality or usability improvement
+        - Low — could cause confusion but unlikely to lead to harm
+        - Medium — could contribute to a preventable error in certain circumstances
+        - High — could directly lead to patient harm if not addressed before launch
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: >
+        Anything else the team should know — country-specific regulations,
+        care setting context, related issues, or personal clinical experience
+        that informs this review.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: This review does not contain real patient data of any kind.
+          required: true
+        - label: I have checked that this concern has not already been raised in an existing issue or discussion.
+          required: true
+        - label: I understand that my clinical perspective will be discussed with the medical-ethical committee.
+          required: false

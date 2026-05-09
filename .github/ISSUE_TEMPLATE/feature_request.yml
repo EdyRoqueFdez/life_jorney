@@ -1,0 +1,136 @@
+name: Feature Request
+description: Propose a new feature or an improvement to an existing one.
+title: "[Feature]: "
+labels: ["feature-request", "needs-discussion"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to propose a new feature.
+
+        **Before submitting:** for significant features — especially anything that affects the data model, clinical workflows, security, privacy, or compliance — please open a [GitHub Discussion](https://github.com/life-jorney/life-jorney/discussions) first to gather feedback before creating a formal issue. This saves everyone time.
+
+        Small improvements (UI tweaks, additional filters, UX polish) can be submitted directly here.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature area
+      description: Which part of the system does this feature relate to?
+      options:
+        - Backend API (Django / DRF)
+        - Web frontend (React)
+        - Mobile app (Flutter)
+        - Authentication and access control
+        - Medical event recording
+        - Allergy and medication management
+        - Laboratory results
+        - Imaging studies
+        - Consent management
+        - Emergency access (break-glass)
+        - Supervisor validation queue
+        - Audit log and traceability
+        - Offline sync
+        - FHIR export / interoperability
+        - Clinical coding (ICD, LOINC, SNOMED CT, ATC)
+        - Admin panel
+        - Documentation
+        - Infrastructure and DevOps
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Is this within the defined MVP scope or a future phase proposal?
+      options:
+        - MVP — it fits within the current MVP definition
+        - Phase 2 — institutional integration and FHIR interoperability
+        - Phase 3 — Big Data prediction engine
+        - New scope — not currently planned (explain why it should be added)
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this feature solves
+      description: >
+        Describe the problem clearly. Who is affected? In what situation?
+        If this is clinically motivated, describe the real-world care scenario
+        using fictional examples only.
+      placeholder: |
+        As a doctor in an emergency consultation, I cannot quickly see whether
+        a patient has a known allergy to penicillin before prescribing treatment.
+        Currently I have to navigate through the full history to find this information...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: >
+        Describe what you would like to happen. Be as specific as possible.
+        If you have a UI idea, a rough sketch or description helps.
+    validations:
+      required: true
+
+  - type: textarea
+    id: clinical_relevance
+    attributes:
+      label: Clinical relevance
+      description: >
+        If this feature has clinical implications — patient safety, care quality,
+        regulatory compliance, or clinical coding — describe them here.
+        This helps the medical-ethical committee evaluate the proposal.
+        Leave blank if not applicable.
+      placeholder: |
+        This feature directly affects patient safety. Missing an allergy alert
+        before prescribing a medication is a known cause of preventable adverse drug events.
+        Reference: WHO Global Patient Safety Challenge 2017.
+
+  - type: textarea
+    id: privacy_impact
+    attributes:
+      label: Privacy and security considerations
+      description: >
+        Does this feature affect how patient data is collected, stored, accessed, or shared?
+        If yes, describe the implications. If no, write "Not applicable."
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_us
+    attributes:
+      label: Related User Stories or Requirements
+      description: >
+        Reference any existing User Story (US-XX), Functional Requirement (FR-XX),
+        or Non-Functional Requirement (NFR-XX) from the engineering document
+        that this feature relates to or extends.
+      placeholder: "Related to US-13 (allergy management) and FR-46 (clinical alerts)."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: >
+        Have you considered any alternative solutions or approaches?
+        Why is the proposed solution preferable?
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and discussions and this has not been proposed before.
+          required: true
+        - label: For significant features, I have opened or plan to open a GitHub Discussion before this issue.
+          required: false
+        - label: This proposal does not contain real patient data of any kind.
+          required: true
+        - label: I have read the CONTRIBUTING.md guide.
+          required: false

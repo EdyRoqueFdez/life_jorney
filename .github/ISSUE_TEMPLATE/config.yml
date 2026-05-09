@@ -1,0 +1,22 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/life-jorney/life-jorney/blob/main/SECURITY.md
+    about: >
+      DO NOT report security vulnerabilities through public GitHub issues.
+      The project domain is not yet defined — check SECURITY.md for the current
+      security contact address. It will be published before the first public release.
+      We follow responsible disclosure with a 72-hour acknowledgement window.
+
+  - name: Questions and general discussion
+    url: https://github.com/life-jorney/life-jorney/discussions
+    about: >
+      Ask questions, share ideas, propose architectural decisions, or just say hello.
+      GitHub Discussions is the right place for open-ended conversation.
+
+  - name: Clinical and medical questions
+    url: https://github.com/life-jorney/life-jorney/discussions/categories/clinical-review
+    about: >
+      Healthcare professionals: use this link to open a clinical review discussion
+      about workflows, coding standards (ICD, LOINC, SNOMED CT), or patient safety concerns.

@@ -1,0 +1,144 @@
+name: Bug Report
+description: Report something that is not working as expected.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug.
+
+        **Important:** If you believe this bug has security or privacy implications — for example, unauthorized data access, data exposure, or authentication bypass — please **do not** submit it here. Check [SECURITY.md](../../SECURITY.md) for the current security contact address (the project domain is not yet defined; a dedicated email will be published there before the first release).
+
+        All examples and descriptions in this report must use **fictional or fully anonymized data**. Never include real patient information.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Which part of the system is affected?
+      options:
+        - Backend API (Django / DRF)
+        - Web frontend (React)
+        - Mobile app (Flutter)
+        - Authentication and 2FA
+        - Medical event recording
+        - Allergy and medication management
+        - Laboratory results
+        - Imaging studies
+        - Consent management
+        - Emergency access (break-glass)
+        - Supervisor validation queue
+        - Audit log
+        - Offline sync
+        - FHIR export / data portability
+        - Admin panel
+        - Other (describe in the report)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How much does this bug affect users?
+      options:
+        - Critical — system unusable or data loss possible
+        - High — major feature broken, no workaround
+        - Medium — feature partially broken, workaround exists
+        - Low — minor visual or UX issue
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: >
+        A clear and concise description of what the bug is.
+        Use fictional data for any clinical examples.
+      placeholder: "When I try to register a medical event for a patient, the system shows..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps to reproduce the behavior.
+      placeholder: |
+        1. Log in as a doctor
+        2. Navigate to 'New medical event'
+        3. Select patient 'Test Patient'
+        4. Fill in the form and click 'Submit for validation'
+        5. See the error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include error messages if any.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: >
+        Browser + version, OS, mobile device model, or backend version as applicable.
+      placeholder: "Chrome 124 on Ubuntu 22.04 / iPhone 15 iOS 17 / Django 5.0.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: patient_data
+    attributes:
+      label: Does this issue involve patient data?
+      description: >
+        This helps us prioritize from a privacy and compliance perspective.
+        Answer honestly — there is no wrong answer.
+      options:
+        - No — this is a UI or functional bug unrelated to data
+        - Potentially — it could affect how data is displayed or stored
+        - Yes — this directly affects patient data handling
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or logs
+      description: >
+        Add screenshots or log excerpts if helpful.
+        Ensure no real patient data is visible. Blur or redact if needed.
+      placeholder: Paste logs or drag and drop screenshots here.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Anything else that might help us understand or reproduce the bug.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this has not been reported before.
+          required: true
+        - label: This report does not contain real patient data of any kind.
+          required: true
+        - label: I have read the CONTRIBUTING.md guide.
+          required: false
