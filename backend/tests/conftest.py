@@ -225,3 +225,30 @@ def pending_event(db, doctor_user, patient_user, cardiology) -> MedicalEvent:
         author=doctor_user.doctor_profile,
         specialty=cardiology,
     )
+
+
+# ---------------------------------------------------------------------------
+# US-04 fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def patient_client(api_client, patient_user) -> APIClient:
+    """Return an API client authenticated as the patient."""
+    api_client.force_authenticate(user=patient_user)
+    return api_client
+
+
+@pytest.fixture
+def validated_event(db, doctor_user, patient_user, cardiology) -> MedicalEvent:
+    """Return a validated MedicalEvent belonging to patient_user."""
+    return MedicalEvent.objects.create(
+        patient=patient_user.patient_profile,
+        event_type=MedicalEvent.EventType.CONSULTATION,
+        description="Annual cardiac review — all parameters within normal range.",
+        icd_code="Z00",
+        event_date="2026-04-15T09:00:00Z",
+        author=doctor_user.doctor_profile,
+        specialty=cardiology,
+        is_validated=True,
+        validation_status=MedicalEvent.ValidationStatus.VALIDATED,
+    )

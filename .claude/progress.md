@@ -10,7 +10,7 @@ Update this file in the same commit as the US implementation.
 | US-01 | Medical event registration by specialty | ✅ Done | `9e5ffb8` | 16/16 |
 | US-02 | Cross-specialty registration request | ✅ Done | `b62347b` | 17/17 |
 | US-03 | Event validation by supervisor | ✅ Done | `629811f` | 15/15 |
-| US-04 | Patient consultation of medical history | ⬜ Pending | — | — |
+| US-04 | Patient consultation of medical history | ✅ Done | `TBD` | 11/11 |
 | US-05 | Family medical history visualization | ⬜ Pending | — | — |
 | US-06 | User management and error reports | ⬜ Pending | — | — |
 | US-07 | Secure authentication with 2FA | ⬜ Pending | — | — |

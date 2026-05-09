@@ -18,11 +18,24 @@ from rest_framework.response import Response
 from backend.models import MedicalEvent, Notification, RegistrationRequest, User
 from backend.serializers import (
     MedicalEventSerializer,
+    PatientHistorySerializer,
     RegistrationRequestSerializer,
     RespondToRequestSerializer,
     ReviewEventSerializer,
     ValidationQueueSerializer,
 )
+
+
+class IsPatient(BasePermission):
+    """Allow access only to authenticated users with role=patient and an existing PatientProfile."""
+
+    def has_permission(self, request, view) -> bool:
+        """Return True only for authenticated patients with a profile."""
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.Role.PATIENT
+            and hasattr(request.user, "patient_profile")
+        )
 
 
 class IsSupervisor(BasePermission):
@@ -210,6 +223,47 @@ class RegistrationRequestViewSet(viewsets.ModelViewSet):
             RegistrationRequestSerializer(registration_request).data,
             status=status.HTTP_200_OK,
         )
+
+
+class PatientHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read-only view of a patient's own validated medical history.
+
+    Implements US-04 / RF-06:
+    - Only authenticated patients may access this viewset.
+    - Returns only events belonging to the authenticated patient.
+    - Only validated events are exposed (is_validated=True).
+    - Ordered by event_date descending (most recent first).
+    - Supports filters: event_type, specialty (pk), date_from, date_to.
+    """
+
+    serializer_class = PatientHistorySerializer
+    permission_classes = [IsAuthenticated, IsPatient]
+
+    def get_queryset(self):
+        """Return the patient's validated events, with optional query-param filters."""
+        patient = self.request.user.patient_profile
+        qs = MedicalEvent.objects.filter(
+            patient=patient,
+            is_validated=True,
+            validation_status=MedicalEvent.ValidationStatus.VALIDATED,
+        ).select_related("author", "specialty").order_by("-event_date")
+
+        params = self.request.query_params
+        event_type = params.get("event_type")
+        specialty = params.get("specialty")
+        date_from = params.get("date_from")
+        date_to = params.get("date_to")
+
+        if event_type:
+            qs = qs.filter(event_type=event_type)
+        if specialty:
+            qs = qs.filter(specialty_id=specialty)
+        if date_from:
+            qs = qs.filter(event_date__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(event_date__date__lte=date_to)
+
+        return qs
 
 
 class ValidationQueueViewSet(viewsets.ReadOnlyModelViewSet):

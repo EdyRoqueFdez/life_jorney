@@ -161,6 +161,31 @@ class RespondToRequestSerializer(serializers.Serializer):
     )
 
 
+class PatientHistorySerializer(serializers.ModelSerializer):
+    """Read-only serializer for a patient's validated medical history (RF-06).
+
+    Returns (read):
+        id, event_type, description, icd_code, event_date, specialty,
+        author, validation_status, validated_at, created_at.
+    """
+
+    class Meta:
+        model = MedicalEvent
+        fields = [
+            "id",
+            "event_type",
+            "description",
+            "icd_code",
+            "event_date",
+            "specialty",
+            "author",
+            "validation_status",
+            "validated_at",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
 class ValidationQueueSerializer(serializers.ModelSerializer):
     """Read-only serializer for listing pending medical events in the supervisor queue.
 
