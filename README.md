@@ -5,7 +5,7 @@
 > *One lifetime. One record. Open to the world.*
 
 ![Status](https://img.shields.io/badge/status-pre--alpha%20%7C%20defining%20architecture-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-GPLv2-blue)
 ![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
 ![Built With](https://img.shields.io/badge/built%20with-Django%20%7C%20React%20%7C%20Flutter-blueviolet)
@@ -209,9 +209,9 @@ Major decisions follow a public RFC (Request for Comments) process in GitHub Dis
 
 ## License
 
-life_jorney is released under the [MIT License](./LICENSE).
+life_jorney is released under the [GNU General Public License version 2 (GPLv2)](./LICENSE) — the same license used by the Linux kernel.
 
-You are free to use, copy, modify, distribute, and deploy this software — including for institutional use — as long as the original license notice is preserved. Commercial use is permitted; selling the software without significant modification is not in the spirit of this project.
+You are free to use, copy, modify, distribute, and deploy this software — including for institutional use. Under the copyleft terms of the GPLv2, any distributed derivative work must also be licensed under the GPLv2 and its complete corresponding source code must be made available. The original copyright and license notices must be preserved.
 
 ---
 

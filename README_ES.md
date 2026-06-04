@@ -5,7 +5,7 @@
 > *Una vida. Un historial. Abierto al mundo.*
 
 ![Estado](https://img.shields.io/badge/estado-pre--alpha%20%7C%20definiendo%20arquitectura-blue)
-![Licencia](https://img.shields.io/badge/licencia-MIT-green)
+![Licencia](https://img.shields.io/badge/licencia-GPLv2-blue)
 ![Contribuciones Bienvenidas](https://img.shields.io/badge/contribuciones-bienvenidas-brightgreen)
 ![PRs Bienvenidos](https://img.shields.io/badge/PRs-bienvenidos-brightgreen)
 ![Construido con](https://img.shields.io/badge/construido%20con-Django%20%7C%20React%20%7C%20Flutter-blueviolet)
@@ -209,9 +209,9 @@ Las decisiones importantes siguen un proceso público de RFC (Request for Commen
 
 ## Licencia
 
-life_jorney se publica bajo la [Licencia MIT](./LICENSE).
+life_jorney se publica bajo la [Licencia Pública General de GNU versión 2 (GPLv2)](./LICENSE) — la misma licencia que usa el kernel de Linux.
 
-Eres libre de usar, copiar, modificar, distribuir y desplegar este software — incluyendo uso institucional — siempre que se preserve el aviso de licencia original. El uso comercial está permitido; vender el software sin modificación significativa no está en el espíritu de este proyecto.
+Eres libre de usar, copiar, modificar, distribuir y desplegar este software — incluyendo uso institucional. Bajo los términos copyleft de la GPLv2, cualquier obra derivada que se distribuya también debe licenciarse bajo la GPLv2 y debe ponerse a disposición su código fuente completo correspondiente. Deben preservarse los avisos originales de copyright y de licencia.
 
 ---
 
